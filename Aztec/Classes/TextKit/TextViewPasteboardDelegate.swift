@@ -58,7 +58,7 @@ open class AztecTextViewPasteboardDelegate: TextViewPasteboardDelegate {
         guard let string = UIPasteboard.general.attributedString() else {
             return false
         }
-
+        string.loadLazyAttachments()
         let selectedRange = textView.selectedRange
         let storage = textView.storage
 
@@ -69,15 +69,35 @@ open class AztecTextViewPasteboardDelegate: TextViewPasteboardDelegate {
             textView?.undoTextReplacement(of: originalText, finalRange: finalRange)
         })
 
-        string.loadLazyAttachments()
+        let colorCorrectedString = fixColors(in: string, using: textView.defaultTextColor)
 
-        storage.replaceCharacters(in: selectedRange, with: string)
+        storage.replaceCharacters(in: selectedRange, with: colorCorrectedString)
         textView.notifyTextViewDidChange()
 
         let newSelectedRange = NSRange(location: selectedRange.location + string.length, length: 0)
         textView.selectedRange = newSelectedRange
 
         return true
+    }
+
+    private func fixColors(in string: NSAttributedString, using baseColor: UIColor?) -> NSAttributedString {
+#if XCODE11
+        guard #available(iOS 13.0, *) else {
+            return string
+        }
+        
+        let colorToUse = baseColor ?? UIColor.label
+
+        let newString = NSMutableAttributedString(attributedString: string)
+        newString.enumerateAttributes(in: newString.rangeOfEntireString, options: []) { (attributes, range, stop) in
+            if attributes[.foregroundColor] == nil {
+                newString.setAttributes([.foregroundColor: colorToUse], range: range)
+            }
+        }
+        return newString
+#else
+        return string
+#endif
     }
 
     /// Tries to paste raw text from the clipboard, replacing the selected range.
@@ -107,8 +127,7 @@ open class AztecTextViewPasteboardDelegate: TextViewPasteboardDelegate {
             newString.setAttributes(newAttributes, range: range)
         }
 
-        let typingAttributesSwifted = textView.typingAttributesSwifted
-        newString.addAttributes(typingAttributesSwifted, range: string.rangeOfEntireString)
+        newString.addAttributes(textView.typingAttributes, range: string.rangeOfEntireString)
         newString.loadLazyAttachments()
 
         textView.storage.replaceCharacters(in: selectedRange, with: newString)

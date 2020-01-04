@@ -196,7 +196,7 @@ class AttributedStringSerializerTests: XCTestCase {
             return
         }
 
-        let formatter = HeaderFormatter(headerLevel: .h1, placeholderAttributes: [:])
+        let formatter = HeaderFormatter(headerLevel: .h1)
         XCTAssertTrue(formatter.present(in: caption, at: 0))
     }
 }
@@ -207,7 +207,7 @@ class AttributedStringSerializerTests: XCTestCase {
 extension AttributedStringSerializerTests {
 
     func attributedString(from node: Node) -> NSAttributedString {
-        let defaultAttributes: [NSAttributedStringKey: Any] = [.font: UIFont.systemFont(ofSize: 14),
+        let defaultAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 14),
                                                                .paragraphStyle: ParagraphStyle.default]
         
         let serializer = AttributedStringSerializer()

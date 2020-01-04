@@ -7,7 +7,7 @@ import Aztec
 ///
 /// The Gutenberg processors are harmless on Calypso posts.
 ///
-open class WordPressInputCustomizer: Plugin.InputCustomizer {
+open class WordPressInputCustomizer: PluginInputCustomizer {
     
     // MARK: - Calypso
     
@@ -17,6 +17,11 @@ open class WordPressInputCustomizer: Plugin.InputCustomizer {
         VideoShortcodeProcessor.videoPressPreProcessor,
         VideoShortcodeProcessor.wordPressVideoPreProcessor,
         AutoPProcessor()
+        ])
+
+    private let gutenbergInputHTMLProcessor = PipelineProcessor([
+        VideoShortcodeProcessor.videoPressPreProcessor,
+        VideoShortcodeProcessor.wordPressVideoPreProcessor
         ])
     
     // MARK: - Gutenberg
@@ -32,25 +37,23 @@ open class WordPressInputCustomizer: Plugin.InputCustomizer {
     
     public required init(gutenbergContentVerifier isGutenbergContent: @escaping (String) -> Bool) {
         self.isGutenbergContent = isGutenbergContent
-        
-        super.init()
     }
     
     // MARK: - Input Processing
     
-    override open func process(html: String) -> String {
+    open func process(html: String) -> String {
         guard !isGutenbergContent(html) else {
-            return html
+            return gutenbergInputHTMLProcessor.process(html)
         }
         
         return calypsoinputHTMLProcessor.process(html)
     }
     
-    override open func process(htmlTree: RootNode) {
+    open func process(htmlTree: RootNode) {
         gutenbergInputHTMLTreeProcessor.process(htmlTree)
     }
     
-    override open func converter(for elementNode: ElementNode) -> ElementConverter? {
+    open func converter(for elementNode: ElementNode) -> ElementConverter? {
         guard let converter = inputElementConverters[elementNode.type] else {
             return nil
         }

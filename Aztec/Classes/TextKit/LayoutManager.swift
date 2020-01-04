@@ -9,19 +9,19 @@ class LayoutManager: NSLayoutManager {
 
     /// Blockquote's Left Border Color
     ///
-    var blockquoteBorderColor = UIColor(red: 0.52, green: 0.65, blue: 0.73, alpha: 1.0)
+    var blockquoteBorderColor: UIColor? = UIColor(red: 0.52, green: 0.65, blue: 0.73, alpha: 1.0)
 
     /// Blockquote's Background Color
     ///
-    var blockquoteBackgroundColor = UIColor(red: 0.91, green: 0.94, blue: 0.95, alpha: 1.0)
+    var blockquoteBackgroundColor: UIColor? = UIColor(red: 0.91, green: 0.94, blue: 0.95, alpha: 1.0)
 
     /// HTML Pre Background Color
     ///
-    var preBackgroundColor = UIColor(red: 243.0/255.0, green: 246.0/255.0, blue: 248.0/255.0, alpha: 1.0)
+    var preBackgroundColor: UIColor? = UIColor(red: 243.0/255.0, green: 246.0/255.0, blue: 248.0/255.0, alpha: 1.0)
 
     /// Closure that is expected to return the TypingAttributes associated to the Extra Line Fragment
     ///
-    var extraLineFragmentTypingAttributes: (() -> [NSAttributedStringKey: Any])?
+    var extraLineFragmentTypingAttributes: (() -> [NSAttributedString.Key: Any])?
 
     /// Blockquote's Left Border width
     ///
@@ -126,12 +126,17 @@ private extension LayoutManager {
     /// Draws a single Blockquote Line Fragment, in the specified Rectangle, using a given Graphics Context.
     ///
     private func drawBlockquote(in rect: CGRect, with context: CGContext) {
-        blockquoteBackgroundColor.setFill()
-        context.fill(rect)
+        if let blockquoteBackgroundColor = blockquoteBackgroundColor {
+            blockquoteBackgroundColor.setFill()
+            context.fill(rect)
 
-        let borderRect = CGRect(origin: rect.origin, size: CGSize(width: blockquoteBorderWidth, height: rect.height))
-        blockquoteBorderColor.setFill()
-        context.fill(borderRect)
+        }
+
+        if let blockquoteBorderColor = blockquoteBorderColor {
+            let borderRect = CGRect(origin: rect.origin, size: CGSize(width: blockquoteBorderWidth, height: rect.height))
+            blockquoteBorderColor.setFill()
+            context.fill(borderRect)
+        }
     }
 }
 
@@ -172,6 +177,9 @@ private extension LayoutManager {
     /// Draws a single HTML Pre Line Fragment, in the specified Rectangle, using a given Graphics Context.
     ///
     private func drawHTMLPre(in rect: CGRect, with context: CGContext) {
+        guard let preBackgroundColor = preBackgroundColor else {
+            return
+        }
         preBackgroundColor.setFill()
         context.fill(rect)
     }
@@ -202,8 +210,16 @@ private extension LayoutManager {
 
             let glyphRange = self.glyphRange(forCharacterRange: enclosingRange, actualCharacterRange: nil)
             let markerRect = rectForItem(range: glyphRange, origin: origin, paragraphStyle: paragraphStyle)
-            let markerNumber = textStorage.itemNumber(in: list, at: enclosingRange.location)
-
+            var markerNumber = textStorage.itemNumber(in: list, at: enclosingRange.location)
+            var start = list.start ?? 1
+            if list.reversed {
+                markerNumber = -markerNumber
+                if list.start == nil {
+                    start = textStorage.numberOfItems(in: list, at: enclosingRange.location)
+                }
+            }
+            markerNumber += start
+            
             drawItem(number: markerNumber, in: markerRect, from: list, using: paragraphStyle, at: enclosingRange.location)
         }
     }
@@ -271,11 +287,11 @@ private extension LayoutManager {
 
     /// Returns the Marker Text Attributes, based on a collection that defines Regular Text Attributes.
     ///
-    private func markerAttributesBasedOnParagraph(attributes: [NSAttributedStringKey: Any]) -> [NSAttributedStringKey: Any] {
+    private func markerAttributesBasedOnParagraph(attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var resultAttributes = attributes
         var indent: CGFloat = 0
         if let style = attributes[.paragraphStyle] as? ParagraphStyle {
-            indent = style.listIndent + Metrics.listTextIndentation
+            indent = style.listIndent + Metrics.listTextIndentation - (Metrics.listTextIndentation / 4)
         }
 
         resultAttributes[.paragraphStyle] = markerParagraphStyle(indent: indent)
@@ -317,7 +333,11 @@ private extension LayoutManager {
         traits.remove(.traitBold)
         traits.remove(.traitItalic)
 
-        let descriptor = font.fontDescriptor.withSymbolicTraits(traits)
-        return UIFont(descriptor: descriptor!, size: font.pointSize)
+        if let descriptor = font.fontDescriptor.withSymbolicTraits(traits) {
+            return UIFont(descriptor: descriptor, size: font.pointSize)
+        } else {
+            // Don't touch the font if we cannot remove the symbolic traits.
+            return font
+        }
     }
 }

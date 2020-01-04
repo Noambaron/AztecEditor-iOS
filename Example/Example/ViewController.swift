@@ -18,12 +18,14 @@ class ViewController: UITableViewController
                 DemoRow(title: "Standard Demo", action: { self.showEditorDemo(filename: "content") }),
                 DemoRow(title: "Captions Demo", action: { self.showEditorDemo(filename: "captions") }),
                 DemoRow(title: "Image Overlays", action: { self.showEditorDemo(filename: "imagesOverlays") }),
+                DemoRow(title: "Video Demo", action: { self.showEditorDemo(filename: "video", wordPressMode: false) }),
+                DemoRow(title: "Failed Media", action: { self.showEditorDemo(filename: "failedMedia") }),
                 DemoRow(title: "Empty Demo", action: { self.showEditorDemo() })
                 ]
             ),
             DemoSection(title: "WordPressEditor (Calypso & Gutenberg)", rows: [
                 DemoRow(title: "Gutenberg Demo", action: { self.showEditorDemo(filename: "gutenberg", wordPressMode: true) }),
-                DemoRow(title: "Video Shortcode Demo", action: { self.showEditorDemo(filename: "video", wordPressMode: true) }),
+                DemoRow(title: "Video Shortcode Demo", action: { self.showEditorDemo(filename: "videoShortcodes", wordPressMode: true) }),
                 DemoRow(title: "Gutenberg Gallery", action: { self.showEditorDemo(filename: "gallery", wordPressMode: true) }),
                 DemoRow(title: "Empty Demo", action: { self.showEditorDemo(wordPressMode: true) })
                 ]
@@ -76,7 +78,7 @@ class ViewController: UITableViewController
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier)!
         cell.accessoryType = .disclosureIndicator
-
+        //cell.backgroundColor = UIColor.
         let row = sections[indexPath.section].rows[indexPath.row]
         cell.textLabel?.text = row.title
 
@@ -86,19 +88,10 @@ class ViewController: UITableViewController
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 40
     }
-    
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let textView = UITextView()
-        
-        textView.font = UIFont.boldSystemFont(ofSize: 14)
-        textView.textAlignment = .center
-        textView.isEditable = false
-        textView.text = sections[section].title
-        textView.backgroundColor = UIColor.lightGray
-        
-        return textView
-    }
 
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return sections[section].title
+    }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

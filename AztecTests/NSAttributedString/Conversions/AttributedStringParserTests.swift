@@ -134,7 +134,7 @@ class AttributedStringParserTests: XCTestCase {
             XCTFail()
             return
         }
-        XCTAssertEqual(strike.name, Element.strike.rawValue)
+        XCTAssertEqual(strike.name, Element.s.rawValue)
         XCTAssertEqual(strike.children.count, 1)
 
         guard let text = strike.children.first as? TextNode else {
@@ -379,7 +379,7 @@ class AttributedStringParserTests: XCTestCase {
         let levels: [Header.HeaderType] = [.h1, .h2, .h3, .h4, .h5, .h6]
 
         for level in levels {
-            let formatter = HeaderFormatter(headerLevel: level, placeholderAttributes: [:])
+            let formatter = HeaderFormatter(headerLevel: level)
 
             let headingStyle = formatter.apply(to: Constants.sampleAttributes)
             let headingText = NSAttributedString(string: "Aztec Rocks\n", attributes: headingStyle)
@@ -515,7 +515,7 @@ class AttributedStringParserTests: XCTestCase {
     /// - Output: <h1>Hello</h1><h1>World</h1>
     ///
     func testNewlineDoesNotGetAddedBetweenTwoBlocklevelElements() {
-        let formatter = HeaderFormatter(headerLevel: .h1, placeholderAttributes: nil)
+        let formatter = HeaderFormatter(headerLevel: .h1)
         let headingStyle = formatter.apply(to: Constants.sampleAttributes)
 
         let testingString = NSAttributedString(string: "Hello\nWorld", attributes: headingStyle)
@@ -1106,7 +1106,7 @@ private extension AttributedStringParserTests {
     /// Constants
     ///
     struct Constants {
-        static let sampleAttributes: [NSAttributedStringKey : Any] = [
+        static let sampleAttributes: [NSAttributedString.Key : Any] = [
             .font: UIFont.systemFont(ofSize: UIFont.systemFontSize),
             .paragraphStyle: NSParagraphStyle()
         ]

@@ -1,5 +1,5 @@
 #
-# Be sure to run `pod lib lint WordPress-Aztec-iOS.podspec' to ensure this is a
+# Be sure to run `bundle exec pod lib lint WordPress-Editor-iOS.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'WordPress-Editor-iOS'
-  s.version          = '1.2'
+  s.version          = '1.15.0-beta.1'
   s.summary          = 'The WordPress HTML Editor.'
 
 # This description is used to generate tags and improve search results.
@@ -27,7 +27,8 @@ Pod::Spec.new do |s|
   s.author           = { 'Automattic' => 'mobile@automattic.com', 'Diego Rey Mendez' => 'diego.rey.mendez@automattic.com', 'Sergio Estevao' => 'sergioestevao@gmail.com', 'Jorge Leandro Perez' => 'jorge.perez@automattic.com' }
   s.social_media_url = "http://twitter.com/WordPressiOS"
   s.source           = { :git => 'https://github.com/wordpress-mobile/WordPress-Aztec-iOS.git', :tag => s.version.to_s }
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '11.0'
+  s.swift_version = '5.0'
 
   s.module_name = "WordPressEditor"
   s.source_files = 'WordPressEditor/WordPressEditor/Classes/**/*'

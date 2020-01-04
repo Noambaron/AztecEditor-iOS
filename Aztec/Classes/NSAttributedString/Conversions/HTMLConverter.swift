@@ -20,7 +20,11 @@ public class HTMLConverter {
     }
     
     // MARK: - Converters: HTML -> AttributedString
-    
+
+    /// If a value is set the character set will be used to replace any last empty line created by the converter.
+    ///
+    open var characterToReplaceLastEmptyLine: Character?
+
     let htmlToTree = HTMLParser()
     
     private(set) lazy var treeToAttributedString: AttributedStringSerializer = {
@@ -47,16 +51,32 @@ public class HTMLConverter {
     ///
     /// - Returns: the attributed string that represents the provided HTML.
     ///
-    func attributedString(from html: String, defaultAttributes: [NSAttributedStringKey: Any]? = [:]) -> NSAttributedString {
+    func attributedString(from html: String, defaultAttributes: [NSAttributedString.Key: Any]? = [:]) -> NSAttributedString {
         let processedHTML = pluginManager.process(html: html)
         let rootNode = htmlToTree.parse(processedHTML)
         
         pluginManager.process(htmlTree: rootNode)
         
         let defaultAttributes = defaultAttributes ?? [:]
-        let attributedString = treeToAttributedString.serialize(rootNode, defaultAttributes: defaultAttributes)
+        var attributedString = treeToAttributedString.serialize(rootNode, defaultAttributes: defaultAttributes)
+
+        if let characterToUse = characterToReplaceLastEmptyLine {
+            attributedString = replaceLastEmptyLine(in: attributedString, with: characterToUse)
+        }
         
         return attributedString
+    }
+
+    func replaceLastEmptyLine(in attributedString: NSAttributedString, with replacement: Character) -> NSAttributedString {
+        var result = attributedString
+        let string = attributedString.string
+        if !string.isEmpty, string.isEmptyLineAtEndOfFile(at: string.count), string.hasSuffix(String(.paragraphSeparator)), let location = string.location(before: attributedString.length) {
+            let mutableString = NSMutableAttributedString(attributedString: attributedString)
+            let attributes = mutableString.attributes(at: location, effectiveRange: nil)
+            mutableString.replaceCharacters(in: NSRange(location: location, length: attributedString.length-location), with: NSAttributedString(string: String(replacement), attributes: attributes))
+            result = mutableString
+        }
+        return result
     }
 
 
